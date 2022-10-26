@@ -1,0 +1,777 @@
+var vnTAccout = function () {
+  return {
+    init: function () {
+      var $this = this;
+      $(".vnt-popup-login").on('click', function(){
+        $this.popupLogin();
+      });
+
+      $(".vnt-popup-register").on('click', function(){
+        $this.popupRegister();
+      });
+
+      $(".vnt-popup-forgetpass").on('click', function(){
+        $this.popupForgetPass();
+      });
+
+
+    },
+
+    tpl_loading: function () {
+      var html='<div class="loading loading-account" >\n' +
+        '    <div class="black_overlay" id="fade"></div>\n' +
+        '    <div class="spinner-container-forgot white_content" style="text-align: center;">\n' +
+        '    <img src="'+DIR_IMAGE +'/ajax-loading.gif" alt="" width="70">\n' +
+        '    </div>\n' +
+        '    </div>';
+      return html;
+    },
+
+    popupLogin: function () {
+      $.fancybox.close();
+      $("#vnt-popup-login").find(".loading-account").remove();
+      $.fancybox.open({
+        type : 'inline',
+        src  : "#vnt-popup-login",
+        baseClass:'vnt-popup',
+        smallBtn:true,
+        toolsbar:false,
+        touch: false,
+        clickOutside: false,
+      });
+    },
+
+    doLogin: function (obj_form) {
+
+      var ok_login = 1;
+      var ref = $("#login_ref").val();
+      var user = obj_form.find('.login_user').val();
+      var pass = obj_form.find('.login_pass').val();
+      var csrf_token = $("#vnt_csrf_token").val();
+
+      if (obj_form.find('.login_save').attr('checked')) {
+        var save = 1
+      } else {
+        var save = 0;
+      }
+
+      if (user == "") {
+        obj_form.find('.login_user').parent().addClass('has-error');
+        ok_login = 0;
+      }
+
+      if (pass == "") {
+        obj_form.find('.login_pass').parent().addClass('has-error');
+        ok_login = 0;
+      }
+
+      if (ok_login) {
+
+        var mydata = "user=" + user + '&pass=' + pass + '&save=' + save + '&csrf_token=' + csrf_token + '&lang=' + lang;
+        $.ajax({
+          async: true,
+          dataType: 'json',
+          url: ROOT + "load_ajax.php?do=ajax_login",
+          type: 'POST',
+          data: mydata,
+          beforeSend: function() {
+            obj_form.addClass('vnt-loading');
+          },
+          success: function(data) {
+            obj_form.removeClass('vnt-loading');
+            if (data.ok) {
+              obj_form[0].reset();
+              if (ref) {
+                top.location = ROOT + ref;
+              } else {
+                top.location.reload();
+              }
+            } else {
+              $(".error-login").html('<div class="alert alert-danger">' + data.mess + '</div>');
+            }
+          }
+        });
+      }
+
+
+      return false;
+
+    } ,
+
+    popupForgetPass: function () {
+      $.fancybox.close();
+      $("#vnt-popup-forgetpass").find(".loading-account").remove();
+      $.fancybox.open({
+        type : 'inline',
+        src  : "#vnt-popup-forgetpass",
+        baseClass:'vnt-popup',
+        smallBtn:true,
+        toolsbar:false,
+        touch: false,
+        clickOutside: false,
+      });
+    },
+
+    doForgetPass: function (obj_form) {
+      ok_go = 1;
+      var email = obj_form.find('.forget_email').val();
+      var url_ajax = $("#url_forget").val();
+      if(email=="") {
+        obj_form.find('.forget_email').parent().addClass('has-error');
+        ok_go= 0;
+      }
+      if(ok_go) {
+        var mydata = "email=" + email  ;
+        $.ajax({
+          async: true,
+          dataType: 'json',
+          url: url_ajax ,
+          type: 'POST',
+          data: mydata,
+          beforeSend: function () {
+            obj_form.addClass('vnt-loading');
+          },
+          success: function (data) {
+            obj_form.removeClass('vnt-loading');
+            obj_form.find('.forget_email').val('');
+            if (data.ok) {
+              obj_form.find(".account-err").html('<div class="alert alert-success">' + data.mess + '</div>');
+            } else {
+              obj_form.find(".account-err").html('<div class="alert alert-danger">' + data.mess + '</div>');
+            }
+          }
+        });
+      }
+    } ,
+
+    popupRegister: function () {
+      $.fancybox.close();
+      $("#vnt-popup-register").find(".loading-account").remove();
+      $.fancybox.open({
+        type : 'inline',
+        src  : "#vnt-popup-register",
+        baseClass:'vnt-popup',
+        smallBtn:true,
+        toolsbar:false,
+        touch: false,
+        clickOutside: false,
+      });
+    },
+    doRegister: function (f) {
+      var params = $("#formPopupReg").serialize();
+      var url_register = $("#url_register").val();
+      $.ajax({
+        url: url_register,
+        dataType: "json",
+        type: "post",
+        data: params,
+        beforeSend: function() {
+          $("#formPopupReg").addClass('vnt-loading');
+        },
+        success: function(rs) {
+          $("#formPopupReg").removeClass('vnt-loading');
+          if (rs.ok == 1) {
+            $("#formPopupReg")[0].reset();
+
+            if (rs.link_ref) {
+              location = rs.link_ref;
+            } else {
+              if (rs.m_status == 1) {
+                location.reload(true);
+              } else {
+                $("#formPopupReg").parent().html(rs.mess)
+              }
+
+            }
+          } else {
+            jAlert(rs.mess, js_lang['error']);
+          }
+        }
+      });
+      return false;
+
+    }
+
+  };
+}();
+
+/** vnTRUST Cart
+ **************************************************************** **/
+var vnTCart = function () {
+
+  return {
+    load_InfoCart: function () {
+      var $this = this;
+      $.ajax({
+        async: true,
+        dataType: 'json',
+        url: ROOT_PRO + "/ajax-cart/info_cart.html",
+        type: 'POST',
+        success: function (data) {
+          if (data.num) {
+            $(".ext_numcart").html(data.num);
+
+            var html = '<div class="lstProductCart">';
+            for (var i = 0; i < data.items.length; i++) {
+              item = data.items[i];
+
+              html += '<div class="i-cart itemCart"  id="icart_' + item.id + '">';
+              
+
+              html += '<div class="thumbPro"><a href="'+item.link+'"><img src="'+item.src+'" alt="'+item.title+'" /></a></div>';
+              html += '<div class="decsPro">';
+              html += '<div class="pptitle"><a href="'+item.link+'">'+item.title+'</a></div>';
+              /*if(item.code){
+                html += '<div class="code">Mã số : <span>'+item.code+'</span></div>';
+              }*/
+              html += '<div class="ppprice">Giá: '+item.text_price +'</div>';
+              html += '<div class="sl">Số lượng: '+item.quantity +'</div>';
+              html += '</div>';
+
+              html += '<div class="deletePro"><a href="javascript:void(0)" class="del" rel="'+item.id+'" title="Xóa"><img src="'+DIR_IMAGE+'/close.png" alt="close"></a></div>';
+              html += '</div>';
+            }
+            html += '</div>';
+
+
+            html += '<div class="infoTotalCart"><div class="lstRowCart">';
+            html += '<div class="rowCart"><div class="colN">'+js_lang['subtotal']+'</div><div class="colP price total-cart" >' + data.total_cart + '</div></div>';
+            html += '</div>';
+
+            html += '<div class="btnTTCart">';
+            html += '<a href="'+data.link_cart+'" ><span>'+js_lang['checkout']+'</span></a>';
+            html += '</div>';
+
+
+
+            $("#ext_cartTop").html(html);
+            $("#cartEmpty").hide();
+
+            $(".i-cart").find('.del').click(function (e) {
+              $this.do_RemoveItem($(this).attr('rel'));
+            });
+            $(".clearAll").click(function (e) {
+              $this.do_ClearCart();
+            });
+
+          } else {
+            $("#ext_cartTop").html('');
+            $("#cartEmpty").show();
+          }
+        }
+      });
+
+      return false;
+    },
+
+
+    do_ShowAddCart: function (id) {
+      var mydata = 'id=' + id;
+      $.ajax({
+        url: ROOT_PRO + '/ajax-cart/show_add_cart.html',
+        type: 'POST',
+        dataType: 'json',
+        data: mydata,
+        async: true,
+        beforeSend: function () {
+          $('html').addClass("loading");
+          $(this).parents("body").find('.overlay').addClass("active");
+        },
+        success: function (rs) {
+          setTimeout(function () {
+            if (rs.ok) {
+              $("#popupCart").html(rs.html);
+              $('.popupAddto').addClass('active')
+
+            } else {
+              alertify.alert(js_lang['error'], rs.mess);
+            }
+            $('html').removeClass("loading");
+          }, 500);
+        }
+      });
+      return false;
+    },
+    changeColor: function (id) {
+      var mydata = 'id=' + id;
+      $.ajax({
+        url: ROOT_PRO + '/ajax-cart/show_add_cart.html',
+        type: 'POST',
+        dataType: 'json',
+        data: mydata,
+        async: true,
+        beforeSend: function () {
+          $('html').addClass("loading");
+          $(this).parents("body").find('.overlay').addClass("active");
+        },
+        success: function (rs) {
+          setTimeout(function () {
+            if (rs.ok) {
+              $("#popupCart").html(rs.html);
+
+            } else {
+              alertify.alert(js_lang['error'], rs.mess);
+            }
+            $('html').removeClass("loading");
+          }, 200);
+        }
+      });
+      return false;
+    },
+
+    changeSize: function (group_id, price) {
+
+      var cart_total = this.caculateCartTotal();
+      $("#item_price").val(price);
+      $("#pc_group_id").val(group_id);
+      $("#pc_price").html(cart_total);
+
+      $(".pc-size").removeClass('active');
+      $("#pc_size_" + group_id).addClass('active');
+      return false;
+    },
+
+    changeQuantity: function (type) {
+      var cur_quantity = parseInt($("#pc_quantity").val());
+      if (type == "increase") {
+        $("#pc_quantity").val(cur_quantity + 1);
+      }
+      if (type == "decrease") {
+        if (cur_quantity > 1) {
+          $("#pc_quantity").val(cur_quantity - 1);
+        }
+      }
+
+      var cart_total = this.caculateCartTotal();
+      $("#pc_price").html(cart_total);
+    },
+
+    caculateCartTotal: function () {
+      var quantity = parseInt($("#pc_quantity").val());
+      var price = parseInt($("#item_price").val());
+      var cart_total = quantity * price;
+      var text_cart_total = vnTRUST.format_number(cart_total) + ' đ';
+      return text_cart_total;
+    },
+
+    do_AddCart: function (id) {
+      $this = this;
+      var ok_add = 1;
+      var err = '';
+      var quantity = ($('#quantity_' + id).val()) ? $('#quantity_' + id).val() : 1;
+
+
+      var group_id = 0;
+      if ($("#pc_size").length) {
+        group_id = parseInt($("#pc_group_id").val());
+        if (group_id == 0) {
+          ok_add = 0;
+          err = js_lang['err_choose_size'];
+        }
+      }
+      if(ok_add){
+        var mydata = 'id=' + id + '&quantity=' + quantity +'&group_id='+group_id;
+        $.ajax({
+          url: ROOT_PRO + '/ajax-cart/add_cart.html',
+          type: 'POST',
+          dataType: 'json',
+          data: mydata,
+          async: true,
+          beforeSend: function () {
+            $('html').addClass("loading");
+            $(this).parents("body").find('.overlay').addClass("active");
+          },
+          success: function (rs) {
+
+            $('.popupAddto').removeClass('active');
+
+            setTimeout(function () {
+              if (rs.ok) {
+                $this.load_InfoCart();
+                $(".cartHeader .showPop").trigger('click');
+
+              } else {
+                alertify.alert(js_lang['error'], rs.mess);
+              }
+              $('html').removeClass("loading");
+            }, 500);
+          }
+        });
+      }else{
+        alertify.alert(js_lang['error'], err);
+      }
+
+      return false;
+    },
+
+    do_RemoveItem: function (id) {
+      var mydata = "id=" + id;
+      $.ajax({
+        type: "POST",
+        dataType: 'json',
+        url: ROOT_PRO + '/ajax-cart/remove_cart.html',
+        data: mydata,
+        success: function (data) {
+          if (data.ok) {
+            if (data.num) {
+              $(".ext_numcart").html(data.num);
+              $(".total-cart").html(data.total_cart);
+              $("#icart_" + id).remove();
+            } else {
+              $("#ext_cartTop").html('');
+              $("#cartEmpty").show();
+            }
+
+            alertify.success(data.mess);
+          } else {
+            alertify.alert(js_lang['error'], data.mess);
+          }
+        }
+      });
+
+      return false;
+    },
+
+    do_ClearCart: function () {
+
+      var mydata = "id=all";
+      $.ajax({
+        type: "POST",
+        dataType: 'json',
+        url: ROOT_PRO + '/ajax-cart/remove_cart.html',
+        data: mydata,
+        success: function (data) {
+          if (data.ok) {
+            $(".ext_numcart").html('0');
+            $("#ext_cartTop").html('');
+            $("#cartEmpty").show();
+
+            $("#ext_cartPopup").html('');
+            $("#cartPopupEmpty").show();
+
+            alertify.success(data.mess);
+          } else {
+            alertify.alert(js_lang['error'], data.mess);
+          }
+        }
+      });
+      return false;
+    },
+
+    do_TrackingOrder: function () {
+      var $this = this;
+      var code = $("#tracking_code").val();
+      var phone = $("#tracking_phone").val();
+      var csrf_token = $('#vnt_csrf_token').val();
+      var ok_search = 1;
+
+      if(code=='') {
+        $("#tracking_code").parent().addClass('has-error');
+        $("#tracking_code").parent().append('<em class="error help-block">Vui lòng nhập mã đơn hàng</em>');
+        ok_search = 0;
+      }
+      if(phone=='') {
+        $("#tracking_phone").parent().addClass('has-error');
+        $("#tracking_phone").parent().append('<em class="error help-block">Vui lòng nhập số điện thoại mua hàng</em>');
+        ok_search = 0;
+      }
+
+      if(ok_search){
+        var mydata = 'code=' + code+'&phone='+phone+'&csrf_token='+csrf_token;
+        $.ajax({
+          async: true,
+          dataType: 'json',
+          url: ROOT_PRO + "/ajax-cart/tracking_order.html",
+          type: 'POST',
+          data: mydata,
+          beforeSend : function(){
+            $("#BoxTrackingOrder").addClass('vnt-loading');
+          },
+          success: function (rs) {
+            $("#BoxTrackingOrder").removeClass('vnt-loading');
+            if(rs.ok){
+              location.href = rs.link_ref ;
+            }else{
+              $("#BoxTrackingOrder").find('.ajax-error').html('<div class="alert alert-danger">'+rs.mess+'</div>');
+            }
+          }
+        });
+      }
+
+
+      return false;
+    },
+
+    init: function () {
+      var $this = this;
+
+      $(".cartTop .i-cart").click(function(){
+        if(!$(".cart-popup").hasClass("active")){
+          $(".cart-popup").addClass("active");
+          $(".cart-popup").find(".vnt-bg-over").addClass("active");
+        }
+        else{
+          $(".cart-popup").removeClass("active");
+          $(".cart-popup").find(".vnt-bg-over").removeClass("active");
+        }
+      });
+
+      $(".cart-popup .title .closez").click(function(){
+        if($(".cart-popup").hasClass("active")){
+          $(".cart-popup").removeClass("active");
+          $(".cart-popup").find(".vnt-bg-over").removeClass("active");
+        }
+      });
+
+      // Add cart
+      $("html").on("click","a.addCart",function(){
+
+        var ok_add = 1;
+        var item_id = $(this).attr('data-id');
+        if(item_id==0 || item_id==''){
+          ok_add=0;
+          jAlert( 'Vui lÃ²ng chá»n SP', js_lang['error'], function () { });
+        }
+
+        if(ok_add){
+          $this.do_AddCart(item_id);
+        }
+
+        return false;
+      });
+
+      $this.load_InfoCart();
+    }
+
+  };
+}();
+
+
+var vnTSearch = function () {
+  return {
+    init: function () {
+
+      /*$(".searchTop input").focus(function(){
+        $(this).parents(".searchTop").addClass("active");
+        bgall.addClass('active')
+      });
+      $(".searchTop input").blur(function(){
+        $(this).parents(".searchTop").removeClass("active");
+        bgall.removeClass('active')
+      });
+      */
+
+
+      $(window).on("keyup", function (key) {
+        if (key.keyCode == 27) {
+          vnTSearch.doReset();
+        }
+      });
+
+      $('#close_keyword').click(function () {
+        vnTSearch.doReset();
+      });
+
+      $(".vnt-search .text_search").keyup(function (event) {
+        var obj = $(this).closest('.vnt-search');
+        vnTSearch.autoComplete(obj);
+      });
+
+    },
+
+    doReset: function () {
+      $('.text_search').val('');
+      $(".search-suggest").html('');
+    },
+
+    clearResult: function () {
+      $('.vnt-search').removeClass("active");
+      $('.bgAlll').removeClass('active');
+      $(".search-suggest").html('');
+    },
+    
+
+    renderItem: function (items) {
+      var html = '';
+      for (var i = 0; i < items.length; i++) {
+        item = items[i];
+
+        html += '<div class="itemSearchH">';
+        html += '<div class="thumbS"><a href="' + item.link + '"><img src="' + item.src + '" alt="' + item.title + '" /></a></div>';
+       
+        html += '<div class="decsS">';
+        html += '<div class="ssName"><a href="' + item.link + '">' + item.title + '</a></div>';
+        html += '<div class="ssCode"> Mã SP : ' + item.maso + '</div>'; 
+        html += '<div class="ssPrice">' + item.price + '</div>';         
+        html += '</div>';
+
+        html += '</div>'; 
+
+      }
+
+      $('.search-suggest').html(html);
+    },
+
+
+    autoComplete: function (obj) {
+      var keyword = $(obj).find(".text_search").val();
+      if (keyword != '') {
+        $('#close_keyword').css('display', 'block');
+        url = ROOT + 'load_ajax.php?do=search_suggest';
+        $.ajax({
+          async: true,
+          dataType: 'json',
+          url: url,
+          type: 'POST',
+          data: "keyword=" + keyword,
+          success: function (rs) {
+            if (rs.ok) {
+              vnTSearch.renderItem(rs.items);
+              //console.log(data.test);
+              $('.close_keyword').css('display', 'block');
+
+
+              $(obj).addClass("active");
+              $('.bgAlll').addClass('active');
+            } else {
+              vnTSearch.clearResult();
+            }
+          }
+        });
+      } else {
+        vnTSearch.clearResult();
+      }
+
+    }
+  };
+}();
+
+
+
+/** Top Nav
+ **************************************************************** **/
+vnTRUST.topNav = function () {
+  
+};
+
+
+vnTRUST.vnTFooter = function (){
+ 
+};
+
+
+
+
+/** init Load
+ **************************************************************** **/
+vnTRUST.init = function () {
+  var Xwidth = $(window).width();
+  if (Xwidth < 1100) {
+    $(".floating-left").hide();
+    $(".floating-right").hide()
+  }
+
+//more thai son
+  alertify.defaults.transition = "pulse";
+  alertify.defaults.theme.ok = "btn btn-primary";
+  alertify.defaults.theme.cancel = "btn btn-default";
+  alertify.defaults.theme.input = "form-control";
+  alertify.dialog('myCustomConfirm', function () {
+    return {
+      setup: function () {
+        return {
+          buttons: [{
+            text: 'Äá»“ng Ă½',
+            key: 13 /*keys.ENTER*/,
+            className: alertify.defaults.theme.ok
+          }, {
+            text: 'Tá»« chá»‘i',
+            invokeOnClose: false, // <== closing won't invoke this
+            className: alertify.defaults.theme.cancel
+          }],
+          focus: {
+            element: 0,
+            select: false
+          },
+          options: {
+            title: 'XĂ¡c nháº­n',
+            maximizable: false,
+            resizable: false
+          }
+        };
+      }
+    }
+  }, false, 'confirm');
+
+
+  $('[data-toggle="tooltip"]').tooltip();
+
+  $(".alert-autohide").delay(5000).slideUp(200, function () {
+    $(this).alert('close');
+  });
+
+  $(".load_state").change(function() {
+    var ext_display = $(this).attr("data-state");
+
+    var mydata =  "do=option_state&city="+ $(this).val();
+    $.ajax({
+      type: "GET",
+      url: ROOT+'load_ajax.php',
+      data: mydata,
+      success: function(html){
+        $("#"+ext_display).html(html);
+      }
+    });
+  });
+
+
+  $(".load_ward").change(function() {
+    var ext_display = $(this).attr("data-ward") ;
+
+    var mydata =  "do=option_ward&state="+ $(this).val();
+    $.ajax({
+      type: "GET",
+      url: ROOT+'load_ajax.php',
+      data: mydata,
+      success: function(html){
+        $("#"+ext_display).html(html);
+      }
+    });
+  });
+
+ 
+
+  $(".menu-category .mc-title").click(function (e) {
+    if(! $(this).parents(".menu-category").hasClass("active")){
+      $(this).parents(".menu-category").addClass("active");
+    }else{
+      $(this).parents(".menu-category").removeClass("active");
+    }
+  });
+  $(window).bind("click",function (e) {
+    var $clicked = $(e.target);
+    if(! $clicked.parents().hasClass("menu-category")){
+      $(".menu-category").removeClass("active");
+    }
+  });
+
+  vnTSearch.init();
+  vnTAccout.init();
+  vnTCart.init();
+  vnTRUST.topNav();
+  vnTRUST.vnTFooter();
+  vnTRUST.load_Statistics();
+  vnTRUST.show_popupBanner(100);
+  //vnTRUST.goTopStart();
+
+  $(window).resize(function(){
+  });
+
+};
+
+/* Init */
+jQuery(window).ready(function () {
+  vnTRUST.init();
+});
+
+

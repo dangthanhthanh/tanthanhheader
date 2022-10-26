@@ -1,0 +1,101 @@
+.viewAll span {
+    display: inline-block;
+    padding: 12px 45px;
+    border: 1px solid #000000;
+    font-size: 13px;
+    line-height: 21px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #000000;
+    cursor: pointer;
+}
+.viewAll span:hover{
+    background-color: #000000;
+    color: #ffffff;
+}
+
+.productAttr {
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.gripcolorPro {
+    min-height: 23px;
+}
+
+.box-filter-price {
+    margin-bottom: 15px;
+}
+
+.slider_price {
+    margin: 20px 5px 10px;
+}
+.slider_price .ui-widget-header{
+    background: #000000;
+}
+.slider_price.ui-widget-content {
+    border: 0;
+    background: #dddddd;
+}
+.slider_price.ui-slider-horizontal {
+    height: 4px;
+}
+.slider_price.ui-slider-horizontal .ui-slider-handle {
+    top: -6px;
+}
+
+.box-filter-price .slider-info {
+    display: -webkit-box;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+    align-items: center;
+    margin:0 -5px;
+    flex-wrap: wrap;
+}
+.box-filter-price .slider-info .s-item {
+    width: 50%;
+    padding: 0 5px;
+    font-size: 12px;
+
+}
+
+.box-filter-price .slider-info .s-item span {
+
+}
+.box-filter-price .slider-info .s-item:last-child {
+    text-align: right;
+}
+/*
+.grip3Check {
+    max-height: 300px;
+    overflow-y: auto;
+}*/
+
+#proDetail {
+    position: relative;
+}
+.productInfoSize .selecSize .contSlect li a.active {
+    background-color: #f2f2f2;
+}
+#ext_dealer {
+    min-height: 150px;
+    position: relative;
+}
+
+.itemStory .qualiStory>a .empty-stock{
+    color: #ff0000;
+}
+
+.productInfoSize .selecSize .contSlect {
+    z-index: 10;
+}
+
+.itemProduct .likePro a.active{
+    background-color: #000000;
+    color: #ffff;
+}
+
+.itemMenuAll .decs .c-root {
+    font-weight: bold;
+}
